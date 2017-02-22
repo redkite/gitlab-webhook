@@ -34,6 +34,17 @@ class RequestHandler(BaseHTTPRequestHandler):
         s.send_message(msg)
         s.quit()
 
+    def answer_ok(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        self.wfile.write(bytes("<html><body><h1>200 OK</h1></body></html>","utf-8"))
+
+    def answer_bad_request(self):
+        self.send_response(400)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        self.wfile.write(bytes("<html><body><h1>400 Bad Request</h1></body></html>","utf-8"))
 
     def event_push(self, data):
         args = ['git','pull','--ff-only']
@@ -44,7 +55,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         if not all (k in self.headers for k in ('Content-Length', 'X-Gitlab-Event', 'X-Gitlab-Token')):
-            self.send_response(400)
+            self.answer_bad_request()
         elif self.headers['X-Gitlab-Token'] == SECRET_TOKEN and not SECRET_TOKEN == '':
             length = int(self.headers['Content-Length'])
             payload = self.rfile.read(length).decode('utf-8')
@@ -53,12 +64,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             if data['object_kind'] == 'push':
                 self.event_push(data)
             else:
-                self.send_response(400)
+                self.answer_bad_request()
                 return
 
-            self.send_response(200)
+            self.answer_ok()
         else:
-            self.send_response(400)
+            self.answer_bad_request()
+
 
 
 def run():
