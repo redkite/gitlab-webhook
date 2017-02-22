@@ -1,0 +1,13 @@
+[Unit]
+Description=GitLab Webhook
+Documentation=https://github.com/redkite/gitlab-webhook
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/user
+User=user
+ExecStart=/usr/local/bin/webhook-recv.py
+
+[Install]
+WantedBy=multi-user.target
